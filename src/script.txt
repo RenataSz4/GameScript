@@ -1,0 +1,58 @@
+GAME MiPrimerJuego
+
+ENTITY jugador {
+    posX: 0,
+    posY: 0,
+    vida: 100,
+    puntos: 0
+}
+
+ENTITY enemigo {
+    posX: 10,
+    posY: 10,
+    vida: 50
+}
+
+ENTITY item {
+    posX: 5,
+    posY: 5,
+    valor: 10
+}
+
+RULE ON_START {
+    PRINT "Bienvenido al juego!";
+    PRINT "Tu mision es recolectar items y evitar enemigos";
+    SET jugador.posX = 0;
+    SET jugador.posY = 0;
+}
+
+RULE ON_UPDATE {
+    MOVE jugador 1 0;
+    
+    IF (jugador.posX >= item.posX) {
+        SET jugador.puntos = jugador.puntos + item.valor;
+        PRINT "Item recolectado!";
+        SET item.posX = item.posX + 10;
+    }
+    
+    IF (jugador.posX >= enemigo.posX) {
+        SET jugador.vida = jugador.vida - 10;
+        PRINT "Golpeado por enemigo!";
+    }
+    
+    WHILE (jugador.vida > 0) {
+        MOVE jugador 1 1;
+    }
+}
+
+RULE ON_WIN {
+    PRINT "Felicidades! Has ganado!";
+    PRINT "Puntos totales: ";
+    END_GAME;
+}
+
+RULE ON_LOSE {
+    PRINT "Game Over";
+    PRINT "Mejor suerte la proxima vez";
+    END_GAME;
+}
