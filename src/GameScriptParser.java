@@ -4,13 +4,17 @@ public class GameScriptParser {
     private ArrayList<Token> tokens;
     private int indiceToken = 0;
     private SyntaxException ex;
+    private SymbolTable symbolTable;
 
     public void analizar(GameScriptLexer lexer) throws SyntaxException {
         tokens = lexer.getTokens();
+        symbolTable = new SymbolTable();
 
         if (Programa()) {
             if (indiceToken == tokens.size()) {
                 System.out.println("\nLa sintaxis del programa es correcta");
+                System.out.println("\nTabla de símbolos:");
+                System.out.println(symbolTable);
                 return;
             }
         }
@@ -44,22 +48,29 @@ public class GameScriptParser {
     private boolean Entidad() {
         int indiceAux = indiceToken;
 
-        if (match("ENTITY"))
-            if (match("IDENTIFICADOR"))
+        if (match("ENTITY")) {
+            if (match("IDENTIFICADOR")) {
+                String nombreEntidad = tokens.get(indiceToken - 1).getNombre();
+                Type entityType = (Type) symbolTable.resolve("entity");
+                EntitySymbol entity = new EntitySymbol(nombreEntidad, entityType);
+                symbolTable.define(entity);
+
                 if (match("LLAVEIZQ"))
-                    if (Atributos())
+                    if (Atributos(entity))
                         if (match("LLAVEDER"))
                             return true;
+            }
+        }
 
         indiceToken = indiceAux;
         return false;
     }
 
-    private boolean Atributos() {
+    private boolean Atributos(EntitySymbol entity) {
         int indiceAux = indiceToken;
 
-        if (Atributo()) {
-            while (match("COMA") && Atributo()) {
+        if (Atributo(entity)) {
+            while (match("COMA") && Atributo(entity)) {
             }
             return true;
         }
@@ -68,13 +79,19 @@ public class GameScriptParser {
         return false;
     }
 
-    private boolean Atributo() {
+    private boolean Atributo(EntitySymbol entity) {
         int indiceAux = indiceToken;
 
-        if (match("IDENTIFICADOR"))
-            if (match("DOSPUNTOS"))
-                if (Valor())
+        if (match("IDENTIFICADOR")) {
+            String nombreAtributo = tokens.get(indiceToken - 1).getNombre();
+            if (match("DOSPUNTOS")) {
+                if (Valor()) {
+                    String valorAtributo = tokens.get(indiceToken - 1).getNombre();
+                    entity.defineAttribute(nombreAtributo, valorAtributo);
                     return true;
+                }
+            }
+        }
 
         indiceToken = indiceAux;
         return false;
@@ -162,12 +179,20 @@ public class GameScriptParser {
     private boolean InstruccionMove() {
         int indiceAux = indiceToken;
 
-        if (match("MOVE"))
-            if (match("IDENTIFICADOR"))
+        if (match("MOVE")) {
+            if (match("IDENTIFICADOR")) {
+                String entidad = tokens.get(indiceToken - 1).getNombre();
+                if (symbolTable.resolve(entidad) == null) {
+                    ex = new SyntaxException("Entidad '" + entidad + "' no declarada");
+                    indiceToken = indiceAux;
+                    return false;
+                }
                 if (Expresion())
                     if (Expresion())
                         if (match("PUNTOYCOMA"))
                             return true;
+            }
+        }
 
         indiceToken = indiceAux;
         return false;
@@ -229,14 +254,34 @@ public class GameScriptParser {
     private boolean InstruccionSet() {
         int indiceAux = indiceToken;
 
-        if (match("SET"))
-            if (match("IDENTIFICADOR"))
-                if (match("PUNTO"))
-                    if (match("IDENTIFICADOR"))
+        if (match("SET")) {
+            if (match("IDENTIFICADOR")) {
+                String entidad = tokens.get(indiceToken - 1).getNombre();
+                Symbol symbol = symbolTable.resolve(entidad);
+                if (symbol == null) {
+                    ex = new SyntaxException("Entidad '" + entidad + "' no declarada");
+                    indiceToken = indiceAux;
+                    return false;
+                }
+                if (match("PUNTO")) {
+                    if (match("IDENTIFICADOR")) {
+                        String atributo = tokens.get(indiceToken - 1).getNombre();
+                        if (symbol instanceof EntitySymbol) {
+                            EntitySymbol entitySym = (EntitySymbol) symbol;
+                            if (!entitySym.getAttributes().containsKey(atributo)) {
+                                ex = new SyntaxException("Atributo '" + atributo + "' no existe en entidad '" + entidad + "'");
+                                indiceToken = indiceAux;
+                                return false;
+                            }
+                        }
                         if (match("IGUAL"))
                             if (Expresion())
                                 if (match("PUNTOYCOMA"))
                                     return true;
+                    }
+                }
+            }
+        }
 
         indiceToken = indiceAux;
         return false;
@@ -316,10 +361,27 @@ public class GameScriptParser {
         indiceToken = indiceAux;
 
         if (match("IDENTIFICADOR")) {
+            String entidad = tokens.get(indiceToken - 1).getNombre();
             int auxPunto = indiceToken;
             if (match("PUNTO")) {
-                if (match("IDENTIFICADOR"))
+                if (match("IDENTIFICADOR")) {
+                    String atributo = tokens.get(indiceToken - 1).getNombre();
+                    Symbol symbol = symbolTable.resolve(entidad);
+                    if (symbol == null) {
+                        ex = new SyntaxException("Entidad '" + entidad + "' no declarada");
+                        indiceToken = indiceAux;
+                        return false;
+                    }
+                    if (symbol instanceof EntitySymbol) {
+                        EntitySymbol entitySym = (EntitySymbol) symbol;
+                        if (!entitySym.getAttributes().containsKey(atributo)) {
+                            ex = new SyntaxException("Atributo '" + atributo + "' no existe en entidad '" + entidad + "'");
+                            indiceToken = indiceAux;
+                            return false;
+                        }
+                    }
                     return true;
+                }
                 indiceToken = auxPunto;
             }
             return true;
