@@ -8,7 +8,7 @@ public class PruebaLexer {
         GameScriptLexer lexer = new GameScriptLexer();
         lexer.analizar(entrada);
 
-        System.out.println("*** Analisis léxico ***\n");
+        System.out.println("*** Analisis léxico ***");
 
         for (Token t: lexer.getTokens()) {
             System.out.println(t);

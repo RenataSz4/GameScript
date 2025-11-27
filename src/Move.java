@@ -13,6 +13,16 @@ public class Move extends Tupla {
     }
 
     public int ejecutar(SymbolTable ts) {
+        EntitySymbol entity = (EntitySymbol) ts.resolve(entidad.getNombre());
+        
+        if (entity != null) {
+            String nuevoX = x.getNombre();
+            String nuevoY = y.getNombre();
+            
+            entity.defineAttribute("posX", nuevoX);
+            entity.defineAttribute("posY", nuevoY);
+        }
+        
         return saltoVerdadero;
     }
 }

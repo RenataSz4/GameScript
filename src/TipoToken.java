@@ -24,6 +24,7 @@ public class TipoToken {
     public static String ONLOSE = "ONLOSE";
     public static String MOVE = "MOVE";
     public static String PRINT = "PRINT";
+    public static String INPUT = "INPUT";
     public static String IF = "IF";
     public static String ELSE = "ELSE";
     public static String WHILE = "WHILE";

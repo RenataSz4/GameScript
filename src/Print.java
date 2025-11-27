@@ -11,6 +11,8 @@ public class Print extends Tupla {
     }
 
     public int ejecutar(SymbolTable ts) {
+        String textoSinComillas = mensaje.getNombre().replace("\"", "");
+        System.out.println(textoSinComillas);
         return saltoVerdadero;
     }
 }

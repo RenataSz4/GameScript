@@ -7,18 +7,18 @@ public class PruebaTuplas {
         GameScriptLexer lexer = new GameScriptLexer();
         lexer.analizar(entrada);
 
-        System.out.println("*** Análisis léxico ***\n");
+        System.out.println("*** Análisis léxico ***");
 
         for (Token t : lexer.getTokens()) {
             System.out.println(t);
         }
 
-        System.out.println("\n*** Análisis sintáctico con tabla de símbolos y tuplas ***\n");
+        System.out.println("\n*** Análisis sintáctico con tabla de símbolos y tuplas ***");
 
         GameScriptParser parser = new GameScriptParser();
         parser.analizar(lexer);
 
-        System.out.println("\n*** Tuplas generadas ***\n");
+        System.out.println("\n*** Tuplas generadas ***");
 
         int contador = 0;
         for (Tupla t : parser.getTuplas()) {

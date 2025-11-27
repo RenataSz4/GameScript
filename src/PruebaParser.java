@@ -7,13 +7,13 @@ public class PruebaParser {
         GameScriptLexer lexer = new GameScriptLexer();
         lexer.analizar(entrada);
 
-        System.out.println("*** Análisis léxico ***\n");
+        System.out.println("*** Análisis léxico ***");
 
         for (Token t: lexer.getTokens()) {
             System.out.println(t);
         }
 
-        System.out.println("\n*** Análisis sintáctico ***\n");
+        System.out.println("\n*** Análisis sintáctico ***");
 
         GameScriptParser parser = new GameScriptParser();
         parser.analizar(lexer);

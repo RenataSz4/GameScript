@@ -12,7 +12,6 @@ public class SymbolTable implements Scope {
         define(new BuiltInTypeSymbol("entity"));
     }
 
-    // Satisfy Scope interface
     public String getScopeName() {
         return "global";
     }

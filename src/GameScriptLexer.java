@@ -16,6 +16,7 @@ public class GameScriptLexer {
         tipos.add(new TipoToken(TipoToken.ONLOSE, "ON_LOSE"));
         tipos.add(new TipoToken(TipoToken.MOVE, "MOVE"));
         tipos.add(new TipoToken(TipoToken.PRINT, "PRINT"));
+        tipos.add(new TipoToken(TipoToken.INPUT, "INPUT"));
         tipos.add(new TipoToken(TipoToken.IF, "IF"));
         tipos.add(new TipoToken(TipoToken.ELSE, "ELSE"));
         tipos.add(new TipoToken(TipoToken.WHILE, "WHILE"));

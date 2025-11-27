@@ -7,13 +7,13 @@ public class PruebaSymbolTable {
         GameScriptLexer lexer = new GameScriptLexer();
         lexer.analizar(entrada);
 
-        System.out.println("*** Análisis léxico ***\n");
+        System.out.println("*** Análisis léxico ***");
 
         for (Token t : lexer.getTokens()) {
             System.out.println(t);
         }
 
-        System.out.println("\n*** Análisis sintáctico con tabla de símbolos ***\n");
+        System.out.println("\n*** Análisis sintáctico con tabla de símbolos ***");
 
         GameScriptParser parser = new GameScriptParser();
         parser.analizar(lexer);
