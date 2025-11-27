@@ -3,7 +3,7 @@ import java.io.IOException;
 
 public class PruebaSymbolTable {
     public static void main(String[] args) throws LexicalException, SyntaxException {
-        String entrada = leerPrograma("script.txt");
+        String entrada = leerPrograma("src/script.txt");
         GameScriptLexer lexer = new GameScriptLexer();
         lexer.analizar(entrada);
 
