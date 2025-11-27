@@ -1,7 +1,6 @@
 import java.util.HashMap;
 import java.util.Map;
 
-/**Represents an entity definition (name, attributes) in symbol table*/
 public class EntitySymbol extends Symbol {
     Map<String, String> attributes = new HashMap<String, String>();
 

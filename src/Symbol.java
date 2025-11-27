@@ -1,6 +1,5 @@
-/**A generic programming language symbol*/
 public class Symbol {
-    String name; // All symbols at least have a name
+    String name; 
     Type type;
 
     public Symbol(String name) {

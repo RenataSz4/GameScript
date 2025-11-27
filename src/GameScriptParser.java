@@ -5,10 +5,12 @@ public class GameScriptParser {
     private int indiceToken = 0;
     private SyntaxException ex;
     private SymbolTable symbolTable;
+    private GameScriptGenerador generador;
 
     public void analizar(GameScriptLexer lexer) throws SyntaxException {
         tokens = lexer.getTokens();
         symbolTable = new SymbolTable();
+        generador = new GameScriptGenerador(tokens);
 
         if (Programa()) {
             if (indiceToken == tokens.size()) {
@@ -20,6 +22,13 @@ public class GameScriptParser {
         }
 
         throw ex;
+    }
+
+    public ArrayList<Tupla> getTuplas() {
+        if (generador != null) {
+            return generador.getTuplas();
+        }
+        return new ArrayList<Tupla>();
     }
 
     private boolean Programa() {
@@ -180,6 +189,7 @@ public class GameScriptParser {
         int indiceAux = indiceToken;
 
         if (match("MOVE")) {
+            int indiceEntidad = indiceToken - 1;
             if (match("IDENTIFICADOR")) {
                 String entidad = tokens.get(indiceToken - 1).getNombre();
                 if (symbolTable.resolve(entidad) == null) {
@@ -187,10 +197,16 @@ public class GameScriptParser {
                     indiceToken = indiceAux;
                     return false;
                 }
-                if (Expresion())
-                    if (Expresion())
-                        if (match("PUNTOYCOMA"))
+                int indiceX = indiceToken;
+                if (Expresion()) {
+                    int indiceY = indiceToken;
+                    if (Expresion()) {
+                        if (match("PUNTOYCOMA")) {
+                            generador.crearTuplaMove(indiceEntidad, indiceX, indiceY);
                             return true;
+                        }
+                    }
+                }
             }
         }
 
@@ -201,10 +217,15 @@ public class GameScriptParser {
     private boolean InstruccionPrint() {
         int indiceAux = indiceToken;
 
-        if (match("PRINT"))
-            if (match("CADENA"))
-                if (match("PUNTOYCOMA"))
+        if (match("PRINT")) {
+            int indiceMensaje = indiceToken - 1;
+            if (match("CADENA")) {
+                if (match("PUNTOYCOMA")) {
+                    generador.crearTuplaPrint(indiceMensaje);
                     return true;
+                }
+            }
+        }
 
         indiceToken = indiceAux;
         return false;
@@ -213,13 +234,15 @@ public class GameScriptParser {
     private boolean InstruccionIf() {
         int indiceAux = indiceToken;
 
-        if (match("IF"))
-            if (match("PARENTESISIZQ"))
-                if (Condicion())
-                    if (match("PARENTESISDER"))
-                        if (match("LLAVEIZQ"))
-                            if (Instrucciones())
+        if (match("IF")) {
+            if (match("PARENTESISIZQ")) {
+                int tuplaInicial = generador.getTuplas().size();
+                if (Condicion()) {
+                    if (match("PARENTESISDER")) {
+                        if (match("LLAVEIZQ")) {
+                            if (Instrucciones()) {
                                 if (match("LLAVEDER")) {
+                                    generador.conectarIf(tuplaInicial);
                                     int auxElse = indiceToken;
                                     if (match("ELSE")) {
                                         if (match("LLAVEIZQ"))
@@ -230,6 +253,12 @@ public class GameScriptParser {
                                     }
                                     return true;
                                 }
+                            }
+                        }
+                    }
+                }
+            }
+        }
 
         indiceToken = indiceAux;
         return false;
@@ -238,14 +267,23 @@ public class GameScriptParser {
     private boolean InstruccionWhile() {
         int indiceAux = indiceToken;
 
-        if (match("WHILE"))
-            if (match("PARENTESISIZQ"))
-                if (Condicion())
-                    if (match("PARENTESISDER"))
-                        if (match("LLAVEIZQ"))
-                            if (Instrucciones())
-                                if (match("LLAVEDER"))
+        if (match("WHILE")) {
+            if (match("PARENTESISIZQ")) {
+                int tuplaInicial = generador.getTuplas().size();
+                if (Condicion()) {
+                    if (match("PARENTESISDER")) {
+                        if (match("LLAVEIZQ")) {
+                            if (Instrucciones()) {
+                                if (match("LLAVEDER")) {
+                                    generador.conectarWhile(tuplaInicial);
                                     return true;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
 
         indiceToken = indiceAux;
         return false;
@@ -255,6 +293,7 @@ public class GameScriptParser {
         int indiceAux = indiceToken;
 
         if (match("SET")) {
+            int indiceEntidad = indiceToken - 1;
             if (match("IDENTIFICADOR")) {
                 String entidad = tokens.get(indiceToken - 1).getNombre();
                 Symbol symbol = symbolTable.resolve(entidad);
@@ -264,6 +303,7 @@ public class GameScriptParser {
                     return false;
                 }
                 if (match("PUNTO")) {
+                    int indiceAtributo = indiceToken - 1;
                     if (match("IDENTIFICADOR")) {
                         String atributo = tokens.get(indiceToken - 1).getNombre();
                         if (symbol instanceof EntitySymbol) {
@@ -274,10 +314,15 @@ public class GameScriptParser {
                                 return false;
                             }
                         }
-                        if (match("IGUAL"))
-                            if (Expresion())
-                                if (match("PUNTOYCOMA"))
+                        if (match("IGUAL")) {
+                            int indiceValor = indiceToken;
+                            if (Expresion()) {
+                                if (match("PUNTOYCOMA")) {
+                                    generador.crearTuplaSet(indiceEntidad, indiceAtributo, indiceValor);
                                     return true;
+                                }
+                            }
+                        }
                     }
                 }
             }
@@ -290,9 +335,12 @@ public class GameScriptParser {
     private boolean InstruccionEndGame() {
         int indiceAux = indiceToken;
 
-        if (match("ENDGAME"))
-            if (match("PUNTOYCOMA"))
+        if (match("ENDGAME")) {
+            if (match("PUNTOYCOMA")) {
+                generador.crearTuplaEndGame();
                 return true;
+            }
+        }
 
         indiceToken = indiceAux;
         return false;
@@ -300,11 +348,18 @@ public class GameScriptParser {
 
     private boolean Condicion() {
         int indiceAux = indiceToken;
+        int indiceValor1 = indiceToken;
 
-        if (Expresion())
-            if (match("OPRELACIONAL"))
-                if (Expresion())
+        if (Expresion()) {
+            int indiceOp = indiceToken - 1;
+            if (match("OPRELACIONAL")) {
+                int indiceValor2 = indiceToken;
+                if (Expresion()) {
+                    generador.crearTuplaIf(indiceValor1, indiceOp, indiceValor2);
                     return true;
+                }
+            }
+        }
 
         indiceToken = indiceAux;
         return false;
